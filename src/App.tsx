@@ -33,8 +33,60 @@ import {
   PlusCircle,
   Edit,
   Check,
-  Trash2
+  Trash2,
+  Palette
 } from "lucide-react";
+
+const COLOR_PRESETS = [
+  {
+    name: "Fuego Fucsia (Original)",
+    primaryColor: "#E8005A",
+    primaryDarkColor: "#C20042",
+    accentColor: "#FFB800",
+    backgroundColor: "#0A0A0B",
+    cardColor: "#141416"
+  },
+  {
+    name: "Oro Negro (Elegante)",
+    primaryColor: "#D4AF37",
+    primaryDarkColor: "#AA820A",
+    accentColor: "#F59E0B",
+    backgroundColor: "#0D0D0E",
+    cardColor: "#161619"
+  },
+  {
+    name: "Brasa Roja (Barbacoa)",
+    primaryColor: "#EF4444",
+    primaryDarkColor: "#DC2626",
+    accentColor: "#F97316",
+    backgroundColor: "#0F0A0A",
+    cardColor: "#1C1414"
+  },
+  {
+    name: "Bosque Ahumado (Hierbas)",
+    primaryColor: "#84CC16",
+    primaryDarkColor: "#65A30D",
+    accentColor: "#EAB308",
+    backgroundColor: "#090B06",
+    cardColor: "#161A0F"
+  },
+  {
+    name: "Carbón Eléctrico (Cian)",
+    primaryColor: "#06B6D4",
+    primaryDarkColor: "#0891B2",
+    accentColor: "#3B82F6",
+    backgroundColor: "#050B14",
+    cardColor: "#0E1726"
+  },
+  {
+    name: "Atardecer Criollo (Naranja)",
+    primaryColor: "#F97316",
+    primaryDarkColor: "#EA580C",
+    accentColor: "#EAB308",
+    backgroundColor: "#0F0B08",
+    cardColor: "#1A130E"
+  }
+];
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -54,6 +106,7 @@ export default function App() {
 
   // Modals
   const [showChangePassModal, setShowChangePassModal] = useState(false);
+  const [showBrandingModal, setShowBrandingModal] = useState(false);
   const [currentPassInput, setCurrentPassInput] = useState("");
   const [newPassInput, setNewPassInput] = useState("");
   const [confirmPassInput, setConfirmPassInput] = useState("");
@@ -112,6 +165,70 @@ export default function App() {
     return saved ? JSON.parse(saved) : { phone: "18498140019", instagram: "monteporkrd" };
   });
 
+  const [storeSettings, setStoreSettings] = useState(() => {
+    const saved = localStorage.getItem("montepork_store_settings");
+    const defaultSettings = {
+      heroTitle: "MONTE PORK",
+      heroSubtitle: "El Más Crujiente de la Región",
+      heroDescription: "Chicharrón de verdad, macerado por 24 horas y explotado al momento. Mofongos, combos del coro y las cervezas más frías de la comarca.",
+      heroButton1Text: "Ver Menú",
+      heroButton2Text: "Escríbenos",
+      specialtyBadge: "La Gloria en Pilón",
+      specialtyTitle: "Nuestra Especialidad:",
+      specialtyTitleHighlight: "Mofongo MP",
+      specialtyDescription: "Majo de plátano verde o maduro y yuca con abundante ajo confitado tradicional, frito con tropezones de chicharrón crujientito. Coronado con su capa de queso fundido burbujeante y servido con porción de tocino, longaniza artesanal o más chicharrón.",
+      specialtyPriceLabel: "Precio",
+      specialtyPriceValue: "RD$ 400",
+      specialtyFlavorLabel: "Sabor",
+      specialtyFlavorValue: "100% Criollo 🇩🇴",
+      specialtyButtonText: "Agregar al plato",
+      footerDescription: "Sazón monteplatense tradicional con crujido urbano. Sigue nuestro chicharrón en nuestras redes. ¡Buen provecho!",
+      footerCopyright: "© 2026 MONTE PORK. Todos los derechos reservados.",
+      footerDisclaimer: "IMPUESTOS NO INCLUIDOS",
+      activeStatusLabel: "Activos en el horno 🇩🇴",
+      primaryColor: "#E8005A",
+      primaryDarkColor: "#C20042",
+      accentColor: "#FFB800",
+      backgroundColor: "#0A0A0B",
+      cardColor: "#141416"
+    };
+    
+    // Ensure all default keys exist in parsed settings
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return { ...defaultSettings, ...parsed };
+      } catch (e) {
+        return defaultSettings;
+      }
+    }
+    return defaultSettings;
+  });
+
+  const handleUpdateSetting = (key: string, value: string) => {
+    setStoreSettings((prev: any) => {
+      const next = { ...prev, [key]: value };
+      localStorage.setItem("montepork_store_settings", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleUpdateSettings = (updates: Record<string, string>) => {
+    setStoreSettings((prev: any) => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem("montepork_store_settings", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleUpdateContactInfo = (key: "phone" | "instagram", value: string) => {
+    setContactInfo((prev: any) => {
+      const next = { ...prev, [key]: value };
+      localStorage.setItem("montepork_contact_info", JSON.stringify(next));
+      return next;
+    });
+  };
+
   // Server-saved SHA-256 password hash (default is "1234")
   const [adminPasswordHash, setAdminPasswordHash] = useState(() => {
     return localStorage.getItem("montepork_admin_pwd_hash") || "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
@@ -130,6 +247,7 @@ export default function App() {
             if (data.bankAccounts) setBankAccounts(data.bankAccounts);
             if (data.rncHeader) setRncHeader(data.rncHeader);
             if (data.contactInfo) setContactInfo(data.contactInfo);
+            if (data.storeSettings) setStoreSettings(data.storeSettings);
             if (data.adminPasswordHash) {
               setAdminPasswordHash(data.adminPasswordHash);
               localStorage.setItem("montepork_admin_pwd_hash", data.adminPasswordHash);
@@ -275,6 +393,7 @@ export default function App() {
     localStorage.setItem("montepork_bank_accounts", JSON.stringify(bankAccounts));
     localStorage.setItem("montepork_rnc_header", rncHeader);
     localStorage.setItem("montepork_contact_info", JSON.stringify(contactInfo));
+    localStorage.setItem("montepork_store_settings", JSON.stringify(storeSettings));
     
     // 2. Submit to server disk file
     try {
@@ -289,6 +408,7 @@ export default function App() {
           bankAccounts,
           rncHeader,
           contactInfo,
+          storeSettings,
           adminPasswordHash
         }),
       });
@@ -486,6 +606,7 @@ export default function App() {
           bankAccounts,
           rncHeader,
           contactInfo,
+          storeSettings,
           adminPasswordHash: computedNew
         }),
       });
@@ -505,7 +626,7 @@ export default function App() {
 
         <div className="w-full max-w-md bg-dark-card border border-white/10 rounded-3xl p-8 relative shadow-2xl space-y-6 z-10">
           <div className="text-center space-y-3">
-            <Logo size="lg" />
+            <Logo size="lg" title={storeSettings.heroTitle} />
             <div className="space-y-1">
               <span className="text-primary text-xs font-black uppercase tracking-widest font-display block">Acceso Administrativo</span>
               <h1 className="text-2xl font-display font-black text-white">Panel Monte Pork</h1>
@@ -542,7 +663,7 @@ export default function App() {
             <button
               type="submit"
               className="w-full py-3.5 bg-primary hover:bg-primary-dark rounded-2xl text-white font-display font-black tracking-wider uppercase transition-all duration-300 transform active:scale-95 cursor-pointer shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-              style={{ backgroundColor: "#E8005A" }}
+              style={{ backgroundColor: "var(--color-primary)" }}
             >
               <Unlock className="w-4 h-4 shrink-0" />
               <span>Entrar al Horno</span>
@@ -566,6 +687,22 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-stretch overflow-x-hidden select-none bg-dark-bg text-gray-100 font-sans selection:bg-primary selection:text-white">
+      
+      {/* Dynamic Theme Color Stylesheet Overrides */}
+      <style>{`
+        :root {
+          --primary-color: ${storeSettings.primaryColor || '#E8005A'};
+          --primary-dark-color: ${storeSettings.primaryDarkColor || '#C20042'};
+          --bg-color: ${storeSettings.backgroundColor || '#0A0A0B'};
+          --card-color: ${storeSettings.cardColor || '#141416'};
+          --accent-color: ${storeSettings.accentColor || '#FFB800'};
+        }
+        
+        /* Ensure custom properties apply correctly with dynamic style injection */
+        body {
+          background-color: var(--color-dark-bg, #0A0A0B) !important;
+        }
+      `}</style>
       
       {/* Admin Action Panel Header */}
       {isAdminLogged && (
@@ -601,9 +738,17 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setShowBrandingModal(true)}
+              className="px-3 py-1.5 bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Palette className="w-3.5 h-3.5 text-primary animate-pulse" style={{ color: "var(--color-primary)" }} />
+              <span>Diseño y Colores</span>
+            </button>
+
+            <button
               onClick={handleSaveAllChanges}
               className="px-4 py-1.5 bg-primary hover:opacity-90 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-lg shadow-primary/20"
-              style={{ backgroundColor: "#E8005A" }}
+              style={{ backgroundColor: "var(--color-primary)" }}
             >
               <Save className="w-3.5 h-3.5" />
               <span>Guardar Configuración</span>
@@ -695,12 +840,199 @@ export default function App() {
                 <button
                   type="submit"
                   className="flex-1 py-3 bg-primary rounded-xl text-xs font-black text-white hover:opacity-95 uppercase tracking-wide cursor-pointer transition-all shadow-md shadow-primary/20"
-                  style={{ backgroundColor: "#E8005A" }}
+                  style={{ backgroundColor: "var(--color-primary)" }}
                 >
                   Registar Clave
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      
+      {/* Branding and Store Customizer Modal */}
+      {showBrandingModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
+          <div className="bg-dark-card border border-white/10 p-6 md:p-8 rounded-3xl w-full max-w-lg space-y-6 shadow-2xl relative my-8">
+            <button
+              onClick={() => setShowBrandingModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary mx-auto border border-primary/35">
+                <Palette className="w-6 h-6" style={{ color: "var(--color-primary)" }} />
+              </div>
+              <h3 className="text-lg font-display font-black text-white">
+                Diseño y Colores del Negocio 🎨
+              </h3>
+              <p className="text-xs text-gray-400 font-light leading-relaxed">
+                Personaliza el nombre de tu marca y define las combinaciones de colores globales. Los cambios se verán reflejados de inmediato en la tienda.
+              </p>
+            </div>
+
+            <div className="space-y-4 font-sans">
+              {/* Business Name Input */}
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase text-gray-500 font-bold block">Nombre del Negocio (E.g. MONTE PORK)</label>
+                <input
+                  type="text"
+                  value={storeSettings.heroTitle}
+                  onChange={(e) => handleUpdateSetting("heroTitle", e.target.value)}
+                  className="w-full bg-black/35 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-primary focus:outline-none text-center font-display font-black"
+                  placeholder="Ej: MONTE PORK"
+                />
+              </div>
+
+              {/* Presets Grid */}
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase text-gray-500 font-bold block">Preajustes / Combinaciones sugeridas</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {COLOR_PRESETS.map((preset) => {
+                    const isSelected = storeSettings.primaryColor === preset.primaryColor && storeSettings.backgroundColor === preset.backgroundColor;
+                    return (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        onClick={() => handleUpdateSettings({
+                          primaryColor: preset.primaryColor,
+                          primaryDarkColor: preset.primaryDarkColor,
+                          accentColor: preset.accentColor,
+                          backgroundColor: preset.backgroundColor,
+                          cardColor: preset.cardColor
+                        })}
+                        className={`p-2 rounded-xl border text-left text-xs font-bold transition-all flex flex-col gap-1 cursor-pointer ${
+                          isSelected 
+                            ? "bg-primary/10 border-primary text-white" 
+                            : "bg-black/30 border-white/5 text-gray-300 hover:bg-black/50 hover:border-white/10"
+                        }`}
+                      >
+                        <span className="font-display truncate text-[10px] block w-full">{preset.name}</span>
+                        <div className="flex gap-1.5 mt-0.5">
+                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 block" style={{ backgroundColor: preset.primaryColor }}></span>
+                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 block" style={{ backgroundColor: preset.accentColor }}></span>
+                          <span className="w-3.5 h-3.5 rounded-full border border-white/20 block" style={{ backgroundColor: preset.backgroundColor }}></span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Custom Colors Picker */}
+              <div className="space-y-3 bg-black/40 border border-white/5 rounded-2xl p-4">
+                <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider block">Personalizar colores específicos</span>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-center justify-between gap-2 bg-black/25 border border-white/10 p-2 rounded-xl">
+                    <span className="text-gray-300 font-medium">Color Principal:</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="text" 
+                        value={storeSettings.primaryColor} 
+                        onChange={(e) => handleUpdateSetting("primaryColor", e.target.value)}
+                        className="w-16 bg-transparent text-gray-300 text-[11px] font-mono border-b border-white/15 text-center focus:outline-none"
+                      />
+                      <input 
+                        type="color" 
+                        value={storeSettings.primaryColor} 
+                        onChange={(e) => handleUpdateSetting("primaryColor", e.target.value)}
+                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 bg-transparent shrink-0" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 bg-black/25 border border-white/10 p-2 rounded-xl">
+                    <span className="text-gray-300 font-medium">Color Oscuro:</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="text" 
+                        value={storeSettings.primaryDarkColor} 
+                        onChange={(e) => handleUpdateSetting("primaryDarkColor", e.target.value)}
+                        className="w-16 bg-transparent text-gray-300 text-[11px] font-mono border-b border-white/15 text-center focus:outline-none"
+                      />
+                      <input 
+                        type="color" 
+                        value={storeSettings.primaryDarkColor} 
+                        onChange={(e) => handleUpdateSetting("primaryDarkColor", e.target.value)}
+                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 bg-transparent shrink-0" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 bg-black/25 border border-white/10 p-2 rounded-xl">
+                    <span className="text-gray-300 font-medium">Color de Acento:</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="text" 
+                        value={storeSettings.accentColor} 
+                        onChange={(e) => handleUpdateSetting("accentColor", e.target.value)}
+                        className="w-16 bg-transparent text-gray-300 text-[11px] font-mono border-b border-white/15 text-center focus:outline-none"
+                      />
+                      <input 
+                        type="color" 
+                        value={storeSettings.accentColor} 
+                        onChange={(e) => handleUpdateSetting("accentColor", e.target.value)}
+                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 bg-transparent shrink-0" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 bg-black/25 border border-white/10 p-2 rounded-xl">
+                    <span className="text-gray-300 font-medium">Color de Fondo:</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="text" 
+                        value={storeSettings.backgroundColor} 
+                        onChange={(e) => handleUpdateSetting("backgroundColor", e.target.value)}
+                        className="w-16 bg-transparent text-gray-300 text-[11px] font-mono border-b border-white/15 text-center focus:outline-none"
+                      />
+                      <input 
+                        type="color" 
+                        value={storeSettings.backgroundColor} 
+                        onChange={(e) => handleUpdateSetting("backgroundColor", e.target.value)}
+                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 bg-transparent shrink-0" 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 bg-black/25 border border-white/10 p-2 rounded-xl sm:col-span-2">
+                    <span className="text-gray-300 font-medium">Color de Tarjetas del Menú:</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="text" 
+                        value={storeSettings.cardColor} 
+                        onChange={(e) => handleUpdateSetting("cardColor", e.target.value)}
+                        className="w-16 bg-transparent text-gray-300 text-[11px] font-mono border-b border-white/15 text-center focus:outline-none"
+                      />
+                      <input 
+                        type="color" 
+                        value={storeSettings.cardColor} 
+                        onChange={(e) => handleUpdateSetting("cardColor", e.target.value)}
+                        className="w-6 h-6 rounded-md cursor-pointer border-0 p-0 bg-transparent shrink-0" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBrandingModal(false);
+                  showToast("✨ Cambios aplicados en tiempo real. ¡No olvides guardarlos!");
+                }}
+                className="w-full py-3 bg-primary rounded-xl text-xs font-black text-white hover:opacity-95 uppercase tracking-wide cursor-pointer transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-1.5"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                <Check className="w-4 h-4" />
+                <span>Aplicar y Cerrar</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -732,71 +1064,160 @@ export default function App() {
         </div>
 
         {/* Floating status bubble */}
-        <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs">
+        <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs z-20">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
           </span>
-          <span className="font-display font-bold uppercase tracking-wider text-[10px] text-gray-300">Activos en el horno 🇩🇴</span>
+          {isAdminLogged && !isAdminPreviewMode ? (
+            <input
+              type="text"
+              value={storeSettings.activeStatusLabel}
+              onChange={(e) => handleUpdateSetting("activeStatusLabel", e.target.value)}
+              className="bg-black/45 border border-white/10 rounded-lg px-2 py-1 text-[10px] text-gray-200 focus:outline-none focus:border-primary font-bold uppercase tracking-wider max-w-[170px]"
+            />
+          ) : (
+            <span className="font-display font-bold uppercase tracking-wider text-[10px] text-gray-300">
+              {storeSettings.activeStatusLabel}
+            </span>
+          )}
         </div>
 
         {/* Content Container */}
         <div className="relative max-w-4xl text-center space-y-6 z-10">
           <div className="space-y-2 animate-fadeIn">
-            <Logo size="xl" />
-            <h2 className="text-xl md:text-3xl font-display font-black text-white/95 uppercase tracking-wide italic">
-              "El Más Crujiente de la Región"
-            </h2>
+            <Logo size="xl" title={storeSettings.heroTitle} />
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <input
+                type="text"
+                value={storeSettings.heroSubtitle}
+                onChange={(e) => handleUpdateSetting("heroSubtitle", e.target.value)}
+                className="text-xl md:text-3xl font-display font-black text-white/95 uppercase tracking-wide italic bg-black/45 border border-white/10 rounded-xl px-4 py-2 w-full text-center focus:outline-none focus:border-primary font-sans max-w-2xl mx-auto block"
+                placeholder="Subtítulo de portada"
+              />
+            ) : (
+              <h2 className="text-xl md:text-3xl font-display font-black text-white/95 uppercase tracking-wide italic">
+                {storeSettings.heroSubtitle}
+              </h2>
+            )}
             <div className="h-1 w-24 bg-primary mx-auto rounded-full"></div>
           </div>
 
-          <p className="max-w-xl mx-auto text-sm md:text-lg text-gray-300 font-light leading-relaxed">
-            Chicharrón de verdad, macerado por 24 horas y explotado al momento. Mofongos, combos del coro y las cervezas más frías de la comarca.
-          </p>
+          {isAdminLogged && !isAdminPreviewMode ? (
+            <textarea
+              rows={3}
+              value={storeSettings.heroDescription}
+              onChange={(e) => handleUpdateSetting("heroDescription", e.target.value)}
+              className="max-w-xl mx-auto text-sm md:text-base text-gray-300 font-light leading-relaxed bg-black/45 border border-white/10 rounded-xl p-3 w-full text-center focus:outline-none focus:border-primary font-sans block"
+              placeholder="Descripción de portada"
+            />
+          ) : (
+            <p className="max-w-xl mx-auto text-sm md:text-lg text-gray-300 font-light leading-relaxed">
+              {storeSettings.heroDescription}
+            </p>
+          )}
 
           {/* Social connections bar */}
-          <div className="flex items-center justify-center gap-4 text-xs font-mono font-medium text-gray-400 py-3 bg-white/5 border border-white/5 rounded-2xl max-w-sm mx-auto backdrop-blur-md">
-            <a
-              href="https://instagram.com/monteporkrd"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-            >
-              <Instagram className="w-4 h-4 text-primary" />
-              <span>@monteporkrd</span>
-            </a>
-            <span className="text-white/20">|</span>
-            <a
-              href="https://wa.me/18498140019"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
-            >
-              <Phone className="w-4 h-4 text-emerald-400" />
-              <span>+1 (849) 814-0019</span>
-            </a>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs font-mono font-medium text-gray-400 py-3 px-4 bg-white/5 border border-white/5 rounded-2xl max-w-md mx-auto backdrop-blur-md">
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <div className="flex flex-col gap-2 w-full">
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold text-center">Ajustes de Contacto</span>
+                <div className="flex items-center gap-2 bg-black/35 border border-white/10 rounded-xl px-3 py-1.5 w-full">
+                  <Instagram className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-gray-500">instagram.com/</span>
+                  <input
+                    type="text"
+                    value={contactInfo.instagram}
+                    onChange={(e) => handleUpdateContactInfo("instagram", e.target.value)}
+                    className="bg-transparent text-gray-200 focus:outline-none w-full font-sans text-xs"
+                    placeholder="monteporkrd"
+                  />
+                </div>
+                <div className="flex items-center gap-2 bg-black/35 border border-white/10 rounded-xl px-3 py-1.5 w-full">
+                  <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-gray-500">WhatsApp:</span>
+                  <input
+                    type="text"
+                    value={contactInfo.phone}
+                    onChange={(e) => handleUpdateContactInfo("phone", e.target.value)}
+                    className="bg-transparent text-gray-200 focus:outline-none w-full font-sans text-xs"
+                    placeholder="18498140019"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <a
+                  href={`https://instagram.com/${contactInfo.instagram}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                >
+                  <Instagram className="w-4 h-4 text-primary" />
+                  <span>@{contactInfo.instagram}</span>
+                </a>
+                <span className="text-white/20 hidden sm:inline">|</span>
+                <a
+                  href={`https://wa.me/${contactInfo.phone}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-emerald-400" />
+                  <span>+{contactInfo.phone}</span>
+                </a>
+              </>
+            )}
           </div>
 
           {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <button
-              onClick={() => handleScrollToSection("menu")}
-              style={{ backgroundColor: "#E8005A" }}
-              className="w-full sm:w-auto px-10 py-4 rounded-2xl font-display font-black text-white tracking-wide uppercase shadow-lg shadow-primary/30 transform transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <UtensilsCrossed className="w-5 h-5 shrink-0" />
-              <span>Ver Menú</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full max-w-md mx-auto">
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <div className="flex flex-col gap-3 w-full">
+                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Textos de Botones</span>
+                <div className="flex items-center gap-2 bg-black/45 border border-white/10 rounded-xl px-3 py-2 w-full">
+                  <span className="text-xs text-gray-400 font-mono">Boton 1:</span>
+                  <input
+                    type="text"
+                    value={storeSettings.heroButton1Text}
+                    onChange={(e) => handleUpdateSetting("heroButton1Text", e.target.value)}
+                    className="bg-transparent text-white focus:outline-none w-full text-xs font-bold font-display"
+                    placeholder="Ver Menú"
+                  />
+                </div>
+                <div className="flex items-center gap-2 bg-black/45 border border-white/10 rounded-xl px-3 py-2 w-full">
+                  <span className="text-xs text-gray-400 font-mono">Boton 2:</span>
+                  <input
+                    type="text"
+                    value={storeSettings.heroButton2Text}
+                    onChange={(e) => handleUpdateSetting("heroButton2Text", e.target.value)}
+                    className="bg-transparent text-white focus:outline-none w-full text-xs font-bold font-display"
+                    placeholder="Escríbenos"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => handleScrollToSection("menu")}
+                  style={{ backgroundColor: "var(--color-primary)" }}
+                  className="w-full sm:w-auto px-10 py-4 rounded-2xl font-display font-black text-white tracking-wide uppercase shadow-lg shadow-primary/30 transform transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <UtensilsCrossed className="w-5 h-5 shrink-0" />
+                  <span>{storeSettings.heroButton1Text}</span>
+                </button>
 
-            <a
-              href="https://wa.me/18498140019"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full sm:w-auto px-10 py-4 bg-white/10 hover:bg-white/15 backdrop-blur-md text-white font-display font-black tracking-wide uppercase border border-white/10 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <MessageCircle className="w-5 h-5 shrink-0 text-emerald-400 fill-emerald-400/10" />
-              <span>Escribenos</span>
-            </a>
+                <a
+                  href={`https://wa.me/${contactInfo.phone}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full sm:w-auto px-10 py-4 bg-white/10 hover:bg-white/15 backdrop-blur-md text-white font-display font-black tracking-wide uppercase border border-white/10 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <MessageCircle className="w-5 h-5 shrink-0 text-emerald-400 fill-emerald-400/10" />
+                  <span>{storeSettings.heroButton2Text}</span>
+                </a>
+              </>
+            )}
           </div>
 
           <div className="pt-6 animate-pulse">
@@ -821,40 +1242,129 @@ export default function App() {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-1.5 bg-primary/20 border border-primary/30 px-3 py-1 rounded-full text-xs font-display font-black text-primary uppercase tracking-wider animate-pulse">
               <Sparkles className="w-3.5 h-3.5 fill-primary" />
-              <span>La Gloria en Pilón</span>
+              {isAdminLogged && !isAdminPreviewMode ? (
+                <input
+                  type="text"
+                  value={storeSettings.specialtyBadge}
+                  onChange={(e) => handleUpdateSetting("specialtyBadge", e.target.value)}
+                  className="bg-transparent text-primary focus:outline-none text-xs font-black uppercase tracking-wider font-display max-w-[150px]"
+                />
+              ) : (
+                <span>{storeSettings.specialtyBadge}</span>
+              )}
             </div>
             
-            <h2 className="text-3xl md:text-4xl font-display font-black text-white tracking-tight">
-              Nuestra Especialidad: <span className="text-primary text-pulse-glow" style={{ color: "#E8005A" }}>Mofongo MP</span>
-            </h2>
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={storeSettings.specialtyTitle}
+                  onChange={(e) => handleUpdateSetting("specialtyTitle", e.target.value)}
+                  className="w-full bg-black/45 border border-white/10 rounded-xl px-3 py-1.5 text-lg font-display font-bold text-white focus:outline-none focus:border-primary font-sans"
+                  placeholder="Título de la especialidad..."
+                />
+                <input
+                  type="text"
+                  value={storeSettings.specialtyTitleHighlight}
+                  onChange={(e) => handleUpdateSetting("specialtyTitleHighlight", e.target.value)}
+                  className="w-full bg-black/45 border border-white/10 rounded-xl px-3 py-1.5 text-lg font-display font-bold text-primary focus:outline-none focus:border-primary font-sans"
+                  style={{ color: "var(--color-primary)" }}
+                  placeholder="Destacado (fucsia)..."
+                />
+              </div>
+            ) : (
+              <h2 className="text-3xl md:text-4xl font-display font-black text-white tracking-tight">
+                {storeSettings.specialtyTitle} <span className="text-primary text-pulse-glow" style={{ color: "var(--color-primary)" }}>{storeSettings.specialtyTitleHighlight}</span>
+              </h2>
+            )}
             
-            <p className="text-sm md:text-base text-gray-300 font-light leading-relaxed">
-              Majo de plátano verde o maduro y yuca con abundante ajo confitado tradicional, frito con tropezones de chicharrón crujientito. Coronado con su capa de queso fundido burbujeante y servido con porción de tocino, longaniza artesanal o más chicharrón.
-            </p>
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <textarea
+                rows={3}
+                value={storeSettings.specialtyDescription}
+                onChange={(e) => handleUpdateSetting("specialtyDescription", e.target.value)}
+                className="w-full bg-black/45 border border-white/10 rounded-xl p-3 text-sm text-gray-300 focus:outline-none focus:border-primary font-sans"
+                placeholder="Descripción de la especialidad..."
+              />
+            ) : (
+              <p className="text-sm md:text-base text-gray-300 font-light leading-relaxed">
+                {storeSettings.specialtyDescription}
+              </p>
+            )}
 
-            <div className="flex items-center gap-6 py-2 border-t border-b border-white/5 my-4">
+            <div className="flex items-center gap-6 py-2 border-t border-b border-white/5 my-4 font-sans">
               <div>
-                <span className="text-xs text-gray-500 uppercase tracking-widest font-display block">Precio</span>
-                <span className="text-2xl font-black font-mono text-white">RD$ 400</span>
+                {isAdminLogged && !isAdminPreviewMode ? (
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      value={storeSettings.specialtyPriceLabel}
+                      onChange={(e) => handleUpdateSetting("specialtyPriceLabel", e.target.value)}
+                      className="bg-black/45 border border-white/10 rounded-lg px-2 py-0.5 text-[10px] text-gray-500 font-mono focus:outline-none w-24 block"
+                    />
+                    <input
+                      type="text"
+                      value={storeSettings.specialtyPriceValue}
+                      onChange={(e) => handleUpdateSetting("specialtyPriceValue", e.target.value)}
+                      className="bg-black/45 border border-white/10 rounded-lg px-2 py-0.5 text-xs font-bold text-white focus:outline-none w-24 block"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-xs text-gray-500 uppercase tracking-widest font-display block">{storeSettings.specialtyPriceLabel}</span>
+                    <span className="text-2xl font-black font-mono text-white">{storeSettings.specialtyPriceValue}</span>
+                  </>
+                )}
               </div>
               <div className="h-8 w-px bg-white/10"></div>
               <div>
-                <span className="text-xs text-gray-500 uppercase tracking-widest font-display block">Sabor</span>
-                <span className="text-sm font-bold text-gray-300">100% Criollo 🇩🇴</span>
+                {isAdminLogged && !isAdminPreviewMode ? (
+                  <div className="space-y-1">
+                    <input
+                      type="text"
+                      value={storeSettings.specialtyFlavorLabel}
+                      onChange={(e) => handleUpdateSetting("specialtyFlavorLabel", e.target.value)}
+                      className="bg-black/45 border border-white/10 rounded-lg px-2 py-0.5 text-[10px] text-gray-500 font-mono focus:outline-none w-28 block"
+                    />
+                    <input
+                      type="text"
+                      value={storeSettings.specialtyFlavorValue}
+                      onChange={(e) => handleUpdateSetting("specialtyFlavorValue", e.target.value)}
+                      className="bg-black/45 border border-white/10 rounded-lg px-2 py-0.5 text-xs font-bold text-white focus:outline-none w-28 block"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <span className="text-xs text-gray-500 uppercase tracking-widest font-display block">{storeSettings.specialtyFlavorLabel}</span>
+                    <span className="text-sm font-bold text-gray-300">{storeSettings.specialtyFlavorValue}</span>
+                  </>
+                )}
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                const item = menuItems.find((i) => i.id === "mofongo_mp");
-                if (item) handleAddToCart(item);
-              }}
-              style={{ backgroundColor: "#E8005A" }}
-              className="px-6 py-3 rounded-xl font-display font-bold text-sm text-white hover:opacity-90 transform active:scale-95 transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-primary/20"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Quiero probarlo</span>
-            </button>
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <div className="flex items-center gap-2 bg-black/45 border border-white/10 rounded-xl px-3 py-2">
+                <span className="text-xs text-gray-400 font-mono">Boton Especialidad:</span>
+                <input
+                  type="text"
+                  value={storeSettings.specialtyButtonText}
+                  onChange={(e) => handleUpdateSetting("specialtyButtonText", e.target.value)}
+                  className="bg-transparent text-white focus:outline-none text-xs font-bold font-sans"
+                />
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  const item = menuItems.find((i) => i.id === "mofongo_mp");
+                  if (item) handleAddToCart(item);
+                }}
+                style={{ backgroundColor: "var(--color-primary)" }}
+                className="px-6 py-3 rounded-xl font-display font-bold text-sm text-white hover:opacity-90 transform active:scale-95 transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-primary/20"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>{storeSettings.specialtyButtonText}</span>
+              </button>
+            )}
           </div>
 
           {/* Photo */}
@@ -882,7 +1392,7 @@ export default function App() {
             {/* Logo and Tagline representation */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Logo size="sm" />
+                <Logo size="sm" title={storeSettings.heroTitle} />
                 <span className="hidden sm:inline text-xs border-l border-white/10 pl-3 text-gray-400 font-mono">El Más Crujiente</span>
               </div>
               
@@ -1014,7 +1524,7 @@ export default function App() {
                       <h2 className="text-2xl md:text-3xl font-display font-black text-white uppercase italic tracking-tight">
                         {cat.name}
                       </h2>
-                      <span className="text-xs font-mono font-bold text-primary" style={{ color: "#E8005A" }}>
+                      <span className="text-xs font-mono font-bold text-primary" style={{ color: "var(--color-primary)" }}>
                         ({items.length} {items.length === 1 ? "ítem" : "ítems"})
                       </span>
                     </div>
@@ -1041,7 +1551,7 @@ export default function App() {
                     return (
                       <div key={groupName} className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-primary" style={{ backgroundColor: "#E8005A" }}></span>
+                          <span className="w-2 h-2 rounded-full bg-primary" style={{ backgroundColor: "var(--color-primary)" }}></span>
                           <h3 className="font-display font-bold text-lg text-white/90">
                             {groupName}
                           </h3>
@@ -1148,7 +1658,7 @@ export default function App() {
           <button
             onClick={() => setIsCartOpen(true)}
             className="w-full bg-primary text-white p-4 rounded-2xl flex items-center justify-between shadow-2xl shadow-primary/40 transform transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] select-none cursor-pointer"
-            style={{ backgroundColor: "#E8005A" }}
+            style={{ backgroundColor: "var(--color-primary)" }}
           >
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-xl">
@@ -1199,15 +1709,27 @@ export default function App() {
         onClearCart={handleClearCart}
         onUpdateNotes={handleUpdateNotes}
         whatsappPhone={contactInfo.phone}
+        storeName={storeSettings.heroTitle}
+        storeSubtitle={storeSettings.heroSubtitle}
       />
 
       {/* Brand Footer */}
       <footer className="bg-black/95 border-t border-white/5 pt-16 pb-8 px-4 md:px-8 text-center space-y-12">
         <div className="max-w-4xl mx-auto space-y-6">
-          <Logo size="lg" />
-          <p className="max-w-md mx-auto text-sm text-gray-500 font-light">
-            Sazón monteplatense tradicional con crujido urbano. Sigue nuestro chicharrón en nuestras redes. ¡Buen provecho!
-          </p>
+          <Logo size="lg" title={storeSettings.heroTitle} />
+          {isAdminLogged && !isAdminPreviewMode ? (
+            <textarea
+              rows={2}
+              value={storeSettings.footerDescription}
+              onChange={(e) => handleUpdateSetting("footerDescription", e.target.value)}
+              className="max-w-md mx-auto text-sm text-gray-500 font-light bg-black/45 border border-white/10 rounded-xl p-3 w-full text-center focus:outline-none focus:border-primary font-sans block"
+              placeholder="Descripción del pie de página"
+            />
+          ) : (
+            <p className="max-w-md mx-auto text-sm text-gray-500 font-light leading-relaxed">
+              {storeSettings.footerDescription}
+            </p>
+          )}
 
           <div className="flex items-center justify-center gap-6">
             <a
@@ -1232,14 +1754,47 @@ export default function App() {
         <div className="max-w-md mx-auto h-px bg-white/5"></div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 max-w-7xl mx-auto text-xs text-gray-600 font-mono">
-          <div>
-            <span>© {new Date().getFullYear()} MONTE PORK. Todos los derechos reservados.</span>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <input
+                type="text"
+                value={storeSettings.footerCopyright}
+                onChange={(e) => handleUpdateSetting("footerCopyright", e.target.value)}
+                className="bg-black/45 border border-white/10 rounded-lg px-2 py-1 text-xs text-gray-500 focus:outline-none focus:border-primary min-w-[280px]"
+                placeholder="Derechos de autor"
+              />
+            ) : (
+              <span>{storeSettings.footerCopyright}</span>
+            )}
+
+            {!isAdminLogged && (
+              <button
+                onClick={() => {
+                  setIsAdminPath(true);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="text-gray-600 hover:text-primary transition-colors cursor-pointer text-[10px] flex items-center gap-1 font-mono uppercase tracking-wider border border-white/5 bg-white/5 rounded-md px-2 py-0.5"
+              >
+                <Lock className="w-2.5 h-2.5" />
+                <span>Acceso Admin</span>
+              </button>
+            )}
           </div>
           
           <div className="flex items-center gap-4">
-            <span className="text-red-500/80 font-bold bg-red-500/5 border border-red-500/10 px-3 py-1 rounded-md uppercase tracking-wider text-[10px]">
-              IMPUESTOS NO INCLUIDOS
-            </span>
+            {isAdminLogged && !isAdminPreviewMode ? (
+              <input
+                type="text"
+                value={storeSettings.footerDisclaimer}
+                onChange={(e) => handleUpdateSetting("footerDisclaimer", e.target.value)}
+                className="bg-black/45 border border-white/10 rounded-lg px-2 py-1 text-xs text-red-500/80 font-bold uppercase focus:outline-none focus:border-primary w-48 text-center"
+                placeholder="Impuestos no incluidos"
+              />
+            ) : (
+              <span className="text-red-500/80 font-bold bg-red-500/5 border border-red-500/10 px-3 py-1 rounded-md uppercase tracking-wider text-[10px]">
+                {storeSettings.footerDisclaimer}
+              </span>
+            )}
           </div>
         </div>
       </footer>

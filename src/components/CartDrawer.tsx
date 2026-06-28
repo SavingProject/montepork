@@ -16,6 +16,8 @@ interface CartDrawerProps {
   onClearCart: () => void;
   onUpdateNotes: (itemId: string, notes: string) => void;
   whatsappPhone?: string;
+  storeName?: string;
+  storeSubtitle?: string;
 }
 
 export default function CartDrawer({
@@ -27,6 +29,8 @@ export default function CartDrawer({
   onClearCart,
   onUpdateNotes,
   whatsappPhone = "18498140019",
+  storeName = "MONTE PORK",
+  storeSubtitle = "El Más Crujiente de la Región",
 }: CartDrawerProps) {
   const [customerName, setCustomerName] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"delivery" | "takeout" | "table">("delivery");
@@ -83,7 +87,7 @@ export default function CartDrawer({
         ? `🎒 *Para Retirar (Takeout)*`
         : `🍽️ *Consumo en el Local*\n📌 *Mesa:* ${tableNumber || "No especificada"}`;
 
-    const formattedMessage = `🐷 *MONTE PORK* 🐷\n_El Más Crujiente de la Región_\n\n📱 *CLIENTE:* ${customerName}\n${deliveryLabel}\n\n🛒 *DETALLE DEL PEDIDO:*\n===========================\n${itemsText}===========================\n*SUBTOTAL:* RD$ ${subtotal.toLocaleString()}\n⚠️ _Impuestos no incluidos_\n\n¡Muchas gracias! Espero mi confirmación del pedido. 🔥🍗`;
+    const formattedMessage = `🐷 *${storeName.toUpperCase()}* 🐷\n_${storeSubtitle}_\n\n📱 *CLIENTE:* ${customerName}\n${deliveryLabel}\n\n🛒 *DETALLE DEL PEDIDO:*\n===========================\n${itemsText}===========================\n*SUBTOTAL:* RD$ ${subtotal.toLocaleString()}\n⚠️ _Impuestos no incluidos_\n\n¡Muchas gracias! Espero mi confirmación del pedido. 🔥🍗`;
 
     const encodedMessage = encodeURIComponent(formattedMessage);
     const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;

@@ -4,12 +4,12 @@
 @theme {
   --font-sans: 'Outfit', sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
-  --color-primary: #E8005A;
-  --color-primary-dark: #C20042;
-  --color-dark-bg: #0A0A0B;
-  --color-dark-card: #141416;
+  --color-primary: var(--primary-color, #E8005A);
+  --color-primary-dark: var(--primary-dark-color, #C20042);
+  --color-dark-bg: var(--bg-color, #0A0A0B);
+  --color-dark-card: var(--card-color, #141416);
   --color-wine: #5F021B;
-  --color-gold: #FFB800;
+  --color-gold: var(--accent-color, #FFB800);
 }
 
 @layer base {
@@ -27,21 +27,21 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0A0B;
+  background: var(--bg-color, #0A0A0B);
 }
 ::-webkit-scrollbar-thumb {
-  background: #E8005A;
+  background: var(--primary-color, #E8005A);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C20042;
+  background: var(--primary-dark-color, #C20042);
 }
 
 /* Custom shine effects & pulsing text */
 .text-pulse-glow {
-  text-shadow: 0 0 10px rgba(232, 0, 90, 0.4);
+  text-shadow: 0 0 10px var(--primary-color, rgba(232, 0, 90, 0.4));
 }
 
 .logo-pig-nose-glow {
-  filter: drop-shadow(0 0 8px rgba(232, 0, 90, 0.6));
+  filter: drop-shadow(0 0 8px var(--primary-color, rgba(232, 0, 90, 0.6)));
 }
